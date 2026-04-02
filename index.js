@@ -3,6 +3,8 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const prisma = require("./prismaClient");
 const { Role } = require("@prisma/client");
+const jwt = require("jsonwebtoken");
+
 const app = express();
 const port = process.env.PORT || 4000;
 
@@ -58,6 +60,54 @@ app.post("/register", async (req, res) => {
       message: "Successfully create new user!",
       data: newUser,
     });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+app.post("/login", async (req, res) => {
+  try {
+    const { email, plainPassword } = req.body;
+
+    // 1. Validate first, then sanitize & normalize the input
+    if (!email || !plainPassword) {
+      return res.status(400).json({ message: "All fields are required!" });
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+    const cleanPassword = plainPassword.trim();
+
+    // 2. Check email input and compare with existing from DB
+    const selectedUser = await prisma.user.findUnique({
+      where: { email: cleanEmail },
+    });
+
+    if (!selectedUser) {
+      return res.status(401).json({ message: "Invalid email or password!" });
+    }
+
+    // 3. Compare between input password and existing password from DB
+    const { password } = selectedUser;
+    const isPasswordValid = await bcrypt.compare(cleanPassword, password);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: "Invalid email or password!" });
+    }
+
+    const payload = {
+      id: selectedUser.id,
+      email: selectedUser.email,
+      role: selectedUser.role,
+    };
+
+    // 4. Generate token for accessing the features
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
+
+    // 5. Return response
+    res.status(200).json({ message: "Login Success!", token: token });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal Server Error" });
