@@ -68,15 +68,16 @@ app.post("/register", async (req, res) => {
 
 app.post("/login", async (req, res) => {
   try {
-    const { email, plainPassword } = req.body;
+    console.log(req.body);
+    const { email, password } = req.body;
 
     // 1. Validate first, then sanitize & normalize the input
-    if (!email || !plainPassword) {
+    if (!email || !password) {
       return res.status(400).json({ message: "All fields are required!" });
     }
 
     const cleanEmail = email.toLowerCase().trim();
-    const cleanPassword = plainPassword.trim();
+    const cleanPassword = password.trim();
 
     // 2. Check email input and compare with existing from DB
     const selectedUser = await prisma.user.findUnique({
@@ -88,8 +89,8 @@ app.post("/login", async (req, res) => {
     }
 
     // 3. Compare between input password and existing password from DB
-    const { password } = selectedUser;
-    const isPasswordValid = await bcrypt.compare(cleanPassword, password);
+    const { password: hashedPassword } = selectedUser;
+    const isPasswordValid = await bcrypt.compare(cleanPassword, hashedPassword);
 
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid email or password!" });
