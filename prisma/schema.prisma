@@ -37,6 +37,7 @@ model Product {
   name          String        
   quantity      Int 
   status        ProductStatus
+  price         Int
   created_at    DateTime      @default(now())
   updated_at    DateTime      @updatedAt
   transactions  Transaction[]

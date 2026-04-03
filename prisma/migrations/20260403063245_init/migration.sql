@@ -21,6 +21,7 @@ CREATE TABLE "Product" (
     "name" TEXT NOT NULL,
     "quantity" INTEGER NOT NULL,
     "status" "ProductStatus" NOT NULL,
+    "price" INTEGER NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
