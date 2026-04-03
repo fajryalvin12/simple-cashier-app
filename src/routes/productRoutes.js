@@ -8,9 +8,9 @@ const {
 } = require("../controllers/productController");
 const verifyToken = require("../middleware/authMiddleware");
 
-router.post("/products", verifyToken, create);
-router.get("/products", selectAll);
-router.put(`/products/:id`, verifyToken, edit);
-router.delete(`/products/:id`, verifyToken, remove);
+router.post("/", verifyToken, create);
+router.get("/", selectAll);
+router.put(`/:id`, verifyToken, edit);
+router.delete(`/:id`, verifyToken, remove);
 
 module.exports = router;

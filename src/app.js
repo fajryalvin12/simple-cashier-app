@@ -10,7 +10,7 @@ app.use(express.json());
 
 // routes
 app.use("/v1/auth", authRouter);
-app.use("/v1/product", productRouter);
+app.use("/v1/products", productRouter);
 
 // quick check
 app.get("/", (req, res) => {

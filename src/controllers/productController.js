@@ -63,7 +63,77 @@ const selectAll = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error!" });
   }
 };
-const edit = async (req, res) => {};
+const edit = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const parsedId = parseInt(id);
+    const { name, quantity, status, price } = req.body;
+
+    // 1. Check product at table DB using ID
+
+    const product = await prisma.product.findUnique({
+      where: { id: parsedId },
+    });
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found!" });
+    }
+
+    // 2. Authorize the process, regarding to the role sending from token
+    const role = req.user.role;
+
+    if (role !== "Admin" && role !== "Cashier") {
+      return res.status(403).json({ message: "Forbidden!" });
+    }
+
+    // 3. Update the data, according to the payload from client
+    let updatedData = {};
+
+    if (name !== undefined) {
+      const cleanName = name.trim();
+      if (cleanName === "") {
+        return res.status(400).json({ message: "Bad Client Request!" });
+      }
+      updatedData["name"] = cleanName;
+    }
+    if (price !== undefined) {
+      if (typeof price !== "number" || price < 0) {
+        return res.status(400).json({ message: "invalid price format!" });
+      }
+      updatedData["price"] = price;
+    }
+    if (quantity !== undefined) {
+      if (typeof quantity !== "number" || quantity < 0) {
+        return res.status(400).json({ message: "invalid quantity format!" });
+      }
+      updatedData["quantity"] = quantity;
+    }
+    const arrStatus = Object.values(ProductStatus);
+    if (status !== undefined) {
+      const isAvailableStatus = arrStatus.includes(status);
+      if (isAvailableStatus) {
+        updatedData["status"] = status;
+      } else {
+        return res.status(400).json({ message: "Status didn't found!" });
+      }
+    }
+
+    if (Object.keys(updatedData).length === 0) {
+      return res.status(400).json({ message: "Bad request client!" });
+    }
+
+    const updated = await prisma.product.update({
+      where: { id: parsedId },
+      data: updatedData,
+    });
+
+    // 4. Return Response
+    res.status(200).json({ message: "Data changed", data: updated });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
 const remove = async (req, res) => {};
 
 module.exports = { create, selectAll, edit, remove };
