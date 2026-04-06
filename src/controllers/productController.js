@@ -1,6 +1,5 @@
 const { ProductStatus } = require("@prisma/client");
 const prisma = require("../config/prismaClient");
-const { parse } = require("dotenv");
 
 const create = async (req, res) => {
   try {
