@@ -57,25 +57,76 @@ const create = async (req, res) => {
 const selectAll = async (req, res) => {
   try {
     // 1. Retrieve page and limit + set default
-    const page = req.query.page;
-    const limit = req.query.limit;
+    let page = req.query.page;
+    let limit = req.query.limit;
 
-    page = page ? 1 : page;
-    limit = limit ? 10 : limit;
+    page = page || 1;
+    limit = limit || 10;
 
     // 2. Parse query params type and validate, then init offset
     const parsedPage = parseInt(page);
     const parsedLimit = parseInt(limit);
 
-    if (parsedPage < 1 || parsedLimit < 1) {
+    if (
+      parsedPage < 1 ||
+      parsedLimit < 1 ||
+      isNaN(parsedPage) ||
+      isNaN(parsedLimit)
+    ) {
       return res.status(400).json({ message: "Invalid page or limit format!" });
     }
 
-    const offset = (page - 1) * limit;
+    const offset = (parsedPage - 1) * parsedLimit;
 
-    const products = await prisma.product.findMany();
+    let filter = {};
 
-    res.status(200).json({ message: "List All Products", data: products });
+    // 3. Retrieve filtering query params + validate
+
+    const status = req.query.status;
+    const name = req.query.name;
+    const arrStatus = Object.values(ProductStatus);
+
+    if (status) {
+      const isAvailableStatus = arrStatus.includes(status);
+      if (isAvailableStatus) {
+        filter["status"] = status;
+      } else {
+        return res.status(400).json({ message: "Status didn't found!" });
+      }
+    }
+
+    if (name) {
+      const cleanName = name.trim();
+      if (cleanName) {
+        filter["name"] = {
+          contains: cleanName,
+          mode: "insensitive",
+        };
+      }
+    }
+
+    // 4. Process the filtering, according by the filter, page or limit
+    const products = await prisma.product.findMany({
+      take: parsedLimit,
+      skip: offset,
+      where: filter,
+    });
+
+    const total = await prisma.product.count({
+      where: filter,
+    });
+
+    // 5. Return Response
+    res.status(200).json({
+      message: "List All Products",
+      meta: {
+        page: parsedPage,
+        limit: parsedLimit,
+        total: total,
+        totalPages: Math.ceil(total / parsedLimit),
+      },
+      data: products,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal Server Error!" });
