@@ -1,5 +1,6 @@
 const { ProductStatus } = require("@prisma/client");
 const prisma = require("../config/prismaClient");
+const { parse } = require("dotenv");
 
 const create = async (req, res) => {
   try {
@@ -55,6 +56,23 @@ const create = async (req, res) => {
 };
 const selectAll = async (req, res) => {
   try {
+    // 1. Retrieve page and limit + set default
+    const page = req.query.page;
+    const limit = req.query.limit;
+
+    page = page ? 1 : page;
+    limit = limit ? 10 : limit;
+
+    // 2. Parse query params type and validate, then init offset
+    const parsedPage = parseInt(page);
+    const parsedLimit = parseInt(limit);
+
+    if (parsedPage < 1 || parsedLimit < 1) {
+      return res.status(400).json({ message: "Invalid page or limit format!" });
+    }
+
+    const offset = (page - 1) * limit;
+
     const products = await prisma.product.findMany();
 
     res.status(200).json({ message: "List All Products", data: products });
@@ -65,11 +83,18 @@ const selectAll = async (req, res) => {
 };
 const edit = async (req, res) => {
   try {
-    const { id } = req.params;
-    const parsedId = parseInt(id);
     const { name, quantity, status, price } = req.body;
 
-    // 1. Check product at table DB using ID
+    // 1. Retrieve Id and check the format before parsing
+
+    const { id } = req.params;
+    const parsedId = parseInt(id);
+
+    if (isNaN(parsedId)) {
+      return res.status(400).json({ message: "Invalid ID format!" });
+    }
+
+    // 2. Check product at table DB using ID
 
     const product = await prisma.product.findUnique({
       where: { id: parsedId },
@@ -79,14 +104,14 @@ const edit = async (req, res) => {
       return res.status(404).json({ message: "Product not found!" });
     }
 
-    // 2. Authorize the process, regarding to the role sending from token
+    // 3. Authorize the process, regarding to the role sending from token
     const role = req.user.role;
 
     if (role !== "Admin" && role !== "Cashier") {
       return res.status(403).json({ message: "Forbidden!" });
     }
 
-    // 3. Update the data, according to the payload from client
+    // 4. Update the data, according to the payload from client
     let updatedData = {};
 
     if (name !== undefined) {
@@ -134,6 +159,49 @@ const edit = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
-const remove = async (req, res) => {};
+const remove = async (req, res) => {
+  try {
+    // 1. Retrieve Id and check the format before parsing
+
+    const { id } = req.params;
+    const parsedId = parseInt(id);
+
+    if (isNaN(parsedId)) {
+      return res.status(400).json({ message: "Invalid ID format!" });
+    }
+
+    // 2. Check product at table DB using ID
+
+    const product = await prisma.product.findUnique({
+      where: { id: parsedId },
+    });
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found!" });
+    }
+
+    // 3. Authorize the process, regarding to the role sending from token
+    const role = req.user.role;
+
+    if (role !== "Admin" && role !== "Cashier") {
+      return res.status(403).json({ message: "Forbidden!" });
+    }
+
+    const deleted = await prisma.product.delete({
+      where: {
+        id: parsedId,
+      },
+    });
+
+    // 4. Return Response
+    res.status(200).json({
+      message: "Product deleted successfully!",
+      data: { id: deleted.id },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
 
 module.exports = { create, selectAll, edit, remove };
