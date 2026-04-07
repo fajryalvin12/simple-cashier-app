@@ -14,6 +14,9 @@ app.use("/v1/auth", authRouter);
 app.use("/v1/products", productRouter);
 app.use("/v1/transactions", transactionRouter);
 
+// Swagger
+require("./swagger")(app); // swagger.js ada di src/
+
 // quick check
 app.get("/", (req, res) => {
   res.send("API is running...");
