@@ -10,7 +10,7 @@ const options = {
       description: "API documentation for Simple Cashier App",
     },
   },
-  apis: ["./routes/*.js"],
+  apis: ["./src/routes/*.js"],
 };
 
 const specs = swaggerJsDoc(options);
