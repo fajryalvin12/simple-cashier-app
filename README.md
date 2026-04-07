@@ -3,7 +3,11 @@
 A simple cashier application built with Node.js, Express, PostgreSQL, and Prisma.
 
 ![Node.js](https://img.shields.io/badge/Node.js-v20-green)
-![License](https://img.shields.io/badge/license-MIT-blue)
+[![Express.js](https://img.shields.io/badge/Express.js-%23404d59.svg?logo=express&logoColor=%2361DAFB)](#)
+[![Prisma](https://img.shields.io/badge/Prisma-2D3748?logo=prisma&logoColor=white)](#)
+[![Postgres](https://img.shields.io/badge/Postgres-%23316192.svg?logo=postgresql&logoColor=white)](#)
+[![Postman](https://img.shields.io/badge/Postman-FF6C37?logo=postman&logoColor=white)](#)
+[![ChatGPT](https://custom-icon-badges.demolab.com/badge/ChatGPT-74aa9c?logo=openai&logoColor=white)](#)
 
 This application allows small businesses to manage products, transactions, and reports with a simple backend API.
 
