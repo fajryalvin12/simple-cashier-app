@@ -59,8 +59,6 @@ const create = async (req, res) => {
         return res.status(400).json({ message: "Out of stock!", data: [] });
       }
 
-      //   console.log(product);
-
       let subtotal = product.price * items[i].quantity;
 
       processedItems.push({
