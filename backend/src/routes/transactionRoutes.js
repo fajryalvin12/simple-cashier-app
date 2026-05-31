@@ -52,7 +52,7 @@ const verifyToken = require("../middleware/authMiddleware");
 
 router.post("/", verifyToken, create);
 router.get("/", selectAll);
-router.get(`/:id`, verifyToken, selectById);
+router.get(`/:id`, selectById);
 // router.put(`/:id`, verifyToken, edit);
 // router.delete(`/:id`, verifyToken, remove);
 module.exports = router;

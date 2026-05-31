@@ -150,6 +150,13 @@ const selectAll = async (req, res) => {
     const trx = await prisma.transaction.findMany({
       take: parsedLimit,
       skip: offset,
+      include: {
+        user: {
+          select: {
+            username: true,
+          },
+        },
+      },
     });
 
     // 5. Return Response

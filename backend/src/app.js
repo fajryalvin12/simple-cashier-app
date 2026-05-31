@@ -1,5 +1,6 @@
 require("dotenv").config();
 const express = require("express");
+const cors = require("cors");
 const app = express();
 
 const authRouter = require("./routes/authRoutes");
@@ -9,6 +10,7 @@ const dashboardRouter = require("./routes/dashboardRoutes");
 
 // global middleware
 app.use(express.json());
+app.use(cors());
 
 // routes
 app.use("/v1/auth", authRouter);
