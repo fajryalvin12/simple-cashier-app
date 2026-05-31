@@ -3,6 +3,7 @@ const router = express.Router();
 const {
   create,
   selectAll,
+  selectById,
   edit,
   remove,
 } = require("../controllers/transactionControllers");
@@ -50,8 +51,8 @@ const verifyToken = require("../middleware/authMiddleware");
  */
 
 router.post("/", verifyToken, create);
-// router.get("/", selectAll);
+router.get("/", selectAll);
+router.get(`/:id`, verifyToken, selectById);
 // router.put(`/:id`, verifyToken, edit);
 // router.delete(`/:id`, verifyToken, remove);
-
 module.exports = router;

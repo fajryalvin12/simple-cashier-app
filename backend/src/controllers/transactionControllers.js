@@ -120,8 +120,90 @@ const create = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error!" });
   }
 };
-const selectAll = async (req, res) => {};
+const selectAll = async (req, res) => {
+  try {
+    // 1. Retrieve page and limit + set default
+    let page = req.query.page;
+    let limit = req.query.limit;
+
+    page = page || 1;
+    limit = limit || 10;
+    // 2. Parse query params type and validate, then init offset
+    const parsedPage = parseInt(page);
+    const parsedLimit = parseInt(limit);
+
+    if (
+      parsedPage < 1 ||
+      parsedLimit < 1 ||
+      isNaN(parsedPage) ||
+      isNaN(parsedLimit)
+    ) {
+      return res.status(400).json({ message: "Invalid page or limit format!" });
+    }
+
+    const offset = (parsedPage - 1) * parsedLimit;
+
+    let filter = {};
+    // 3. Retrieve filtering query params + validate
+
+    // 4. Process the filtering, according by the filter, page or limit
+    const trx = await prisma.transaction.findMany({
+      take: parsedLimit,
+      skip: offset,
+    });
+
+    // 5. Return Response
+    res.status(200).json({
+      message: "List All Transaction",
+      meta: {
+        page: parsedPage,
+        limit: parsedLimit,
+        // total: total,
+        // totalPages: Math.ceil(total / parsedLimit),
+      },
+      data: trx,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error!" });
+  }
+};
+const selectById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id || isNaN(parseInt(id))) {
+      return res
+        .status(400)
+        .json({ message: "Invalid transaction id format!" });
+    }
+
+    const trxDetail = await prisma.transaction.findUnique({
+      where: { id: parseInt(id) },
+      include: {
+        items: {
+          include: {
+            product: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!trxDetail) {
+      return res.status(404).json({ message: "Transaction not found!" });
+    }
+
+    res.status(200).json({ message: "Transaction found!", data: trxDetail });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error!" });
+  }
+};
 const edit = async (req, res) => {};
 const remove = async (req, res) => {};
 
-module.exports = { create, selectAll, edit, remove };
+module.exports = { create, selectAll, selectById, edit, remove };
