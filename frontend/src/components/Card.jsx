@@ -1,24 +1,31 @@
-function Card({ icon, count, status }) {
+function Card({ icon, count, status, trend }) {
   return (
-    <div className="flex flex-col gap-8 justify-center items-center h-32 w-64 rounded-lg p-4 bg-white">
-      <div className="flex gap-4 items-center w-full">
-        <div className="p-2 text-white bg-gray-700 rounded-sm text-md">
+    <div className="flex flex-col justify-between bg-white rounded-xl p-4 shadow-sm border border-gray-100 min-w-0 flex-1">
+      <div className="flex items-start justify-between">
+        <div className="p-2 bg-indigo-50 rounded-lg text-lg leading-none">
           {icon}
         </div>
-        <div>
-          {status === "Revenue" ? (
-            <div className="text-sm font-semibold">
-              Rp {count.toLocaleString("id-ID")}
-            </div>
-          ) : (
-            <div className="text-sm font-semibold">{count}</div>
-          )}
-          <div className="text-sm text-gray-500">{status}</div>
-        </div>
+        {trend !== undefined && (
+          <span
+            className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+              trend >= 0
+                ? "bg-green-50 text-green-700"
+                : "bg-red-50 text-red-600"
+            }`}
+          >
+            {trend >= 0 ? "▲" : "▼"} {Math.abs(trend)}%
+          </span>
+        )}
       </div>
-      <div className="flex text-xs justify-between items-center w-full">
-        <div>Just updated</div>
-        <div>graphic</div>
+      <div className="mt-3">
+        {status === "Revenue" ? (
+          <p className="text-xl font-bold text-gray-800">
+            Rp {count.toLocaleString("id-ID")}
+          </p>
+        ) : (
+          <p className="text-xl font-bold text-gray-800">{count}</p>
+        )}
+        <p className="text-xs text-gray-500 mt-0.5">{status}</p>
       </div>
     </div>
   );

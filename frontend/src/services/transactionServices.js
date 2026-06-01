@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:3000/v1";
+const BASE_URL = "http://localhost:4000/v1";
 
 export async function getTransactionsList() {
   const response = await fetch(`${BASE_URL}/transactions`);
